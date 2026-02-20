@@ -1,17 +1,20 @@
 import 'package:quiz_app/quiz/data/mappers/quiz_error.mapper.dart';
 import 'package:quiz_app/quiz/data/services/quiz.service.dart';
+import 'package:quiz_app/quiz/domain/exceptions/quiz.exception.dart';
+
 import 'package:quiz_app/quiz/domain/models/question.model.dart';
 import 'package:quiz_app/quiz/domain/models/quiz_result.model.dart';
 import 'package:quiz_app/quiz/domain/repositories/quiz.repository.dart';
 
 /// Concrete implementation of [QuizRepository].
 ///
-/// Sits in the data layer and bridges [QuizService] (raw maps) with
-/// the domain layer ([Question], [QuizResult]).
+/// Bridges [QuizService] (raw maps) with the domain layer ([Question],
+/// [QuizResult]). This class is the single error boundary in the data
+/// layer — every exception that leaves this class is a [QuizException]
+/// with a pre-cleaned, user-friendly [QuizException.message].
 ///
-/// All [Exception]s are caught here and re-thrown as [Exception] with
-/// a user-friendly message produced by [QuizErrorMapper], so the
-/// [QuizProvider] only ever receives clean, displayable error strings.
+/// Callers ([QuizProvider]) use `on QuizException catch (e)` — no
+/// string parsing, no [Exception.toString] manipulation.
 class QuizRepositoryImpl implements QuizRepository {
   const QuizRepositoryImpl(this._service);
 
@@ -25,7 +28,9 @@ class QuizRepositoryImpl implements QuizRepository {
       final rawList = await _service.fetchQuestions();
       return rawList.map(_mapToQuestion).toList(growable: false);
     } catch (e) {
-      throw Exception(QuizErrorMapper.map(e));
+      // Re-throw every raw exception as a typed QuizException so
+      // QuizProvider receives one predictable type at the boundary.
+      throw QuizException(QuizErrorMapper.map(e));
     }
   }
 
@@ -35,15 +40,12 @@ class QuizRepositoryImpl implements QuizRepository {
     Map<int, int> answers,
   ) async {
     try {
-      // QuizResult is computed entirely in-memory — no network call needed.
-      // Wrapped in Future so the interface contract (async) is honoured
-      // and the Provider can await it uniformly.
       return QuizResult(
         questions: questions,
         selectedAnswers: Map.unmodifiable(answers),
       );
     } catch (e) {
-      throw Exception(QuizErrorMapper.map(e));
+      throw QuizException(QuizErrorMapper.map(e));
     }
   }
 
@@ -51,8 +53,8 @@ class QuizRepositoryImpl implements QuizRepository {
 
   /// Maps a raw [Map<String, dynamic>] from [QuizService] to a [Question].
   ///
-  /// Throws [FormatException] if a required key is absent or has the
-  /// wrong type — caught upstream by the [try/catch] in [getQuestions].
+  /// Throws [FormatException] on type mismatches — caught upstream and
+  /// converted to [QuizException] by [getQuestions].
   Question _mapToQuestion(Map<String, dynamic> raw) {
     try {
       return Question(
