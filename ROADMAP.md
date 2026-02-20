@@ -179,7 +179,7 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
   - `onTap: () => context.read<QuizProvider>().selectAnswer(id, index)` — `read`, never `watch`
 
 ### 4.6 Bottom Navigation Bar Widget (`quiz/presentation/widgets/`)
-- [ ] **`quiz_nav_bar.widget.dart`** — `QuizNavBar`
+- [x] **`quiz_nav_bar.widget.dart`** — `QuizNavBar`
   - Contains Previous / counter label / Next or Submit button
   - Uses `Consumer<QuizProvider>` scoped to just this bar — question card and option tiles above it do not rebuild when nav state changes
   - All buttons use `context.read<QuizProvider>()` in their `onPressed` callbacks
@@ -188,15 +188,15 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
   - Submit button shows `CircularProgressIndicator` while submitting; label otherwise
 
 ### 4.7 Home Screen (`core/screens/home_screen.dart`)
-- [ ] Displays app name, brief description, and **"Start Quiz"** button
-- [ ] Uses `Selector<QuizProvider, bool>` on `state is QuizLoading` to toggle the button's loading indicator — no full-page rebuild
-- [ ] **"Start Quiz"** button:
+- [x] Displays app name, brief description, and **"Start Quiz"** button
+- [x] Uses `Selector<QuizProvider, bool>` on `state is QuizLoading` to toggle the button's loading indicator — no full-page rebuild
+- [x] **"Start Quiz"** button:
   - `onPressed: () => context.read<QuizProvider>().loadQuestions()`
   - Shows `CircularProgressIndicator` while loading; disabled to prevent duplicate taps
-- [ ] Navigation: Screen listens for `QuizLoaded` state via a `Consumer` listener pattern; on transition calls `context.go('/quiz')` — `.go` because Home must not remain on the back stack
+- [x] Navigation: Screen listens for `QuizLoaded` state via a `Consumer` listener pattern; on transition calls `context.go('/quiz')` — `.go` because Home must not remain on the back stack
 
 ### 4.8 Quiz Question Screen (`quiz/presentation/screens/quiz.screen.dart`)
-- [ ] **Top-level sealed state switch** uses `context.watch<QuizProvider>()` — the only permitted `watch` call; the entire layout swaps per state
+- [x] **Top-level sealed state switch** uses `context.watch<QuizProvider>()` — the only permitted `watch` call; the entire layout swaps per state
   ```dart
   final state = context.watch<QuizProvider>().state;
   return switch (state) {
@@ -208,23 +208,23 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
     QuizSubmitted(:var result)  => _NavigateToResults(result: result),
   };
   ```
-- [ ] `_QuizLoadedBody` — private widget composing sub-widgets, each with their own `Selector`:
+- [x] `_QuizLoadedBody` — private widget composing sub-widgets, each with their own `Selector`:
   - `QuizProgressBar` — Selector on `currentIndex`
   - `QuizQuestionCard` — Selector on `(currentIndex, currentQuestion.text)`
   - Four `QuizOptionTile`s — each with a Selector on `selectedAnswers[question.id]`
   - `QuizNavBar` — Consumer on `currentIndex`, `selectedAnswers`, `state`
-- [ ] `_NavigateToResults` — a `StatefulWidget` whose `initState` fires:
+- [x] `_NavigateToResults` — a `StatefulWidget` whose `initState` fires:
   ```dart
   WidgetsBinding.instance.addPostFrameCallback((_) {
     context.go('/results', extra: result);
   });
   ```
   Calling `.go()` directly inside `build()` is illegal; `addPostFrameCallback` defers it safely.
-- [ ] `SnackBar` warning (via `ScaffoldMessenger`) if submit is attempted with unanswered questions — invoked from `QuizNavBar`'s callback, triggered by the Screen
+- [x] `SnackBar` warning (via `ScaffoldMessenger`) if submit is attempted with unanswered questions — invoked from `QuizNavBar`'s callback, triggered by the Screen
 
 ### 4.9 Results Screen (`quiz/presentation/screens/results.screen.dart`)
-- [ ] Receives `QuizResult` via `GoRouterState.extra` — screen owns its data directly; **no provider reads needed** since the result is fully contained in `extra`
-- [ ] Displays:
+- [x] Receives `QuizResult` via `GoRouterState.extra` — screen owns its data directly; **no provider reads needed** since the result is fully contained in `extra`
+- [x] Displays:
   - **Score banner** — `7 / 10` in large, prominent typography
   - **Summary row** — Correct ✅ / Incorrect ❌ counts
   - **Scrollable review list** — one card per question:
@@ -232,7 +232,7 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
     - User's chosen answer (green if correct, red if wrong)
     - Correct answer label (always green)
     - No multiple-choice options — answer strings only
-- [ ] **"Retry Quiz"** button:
+- [x] **"Retry Quiz"** button:
   1. `context.read<QuizProvider>().resetQuiz()`
   2. `context.go('/')` — `.go` to fully reset the stack; results must not remain reachable via back
 
