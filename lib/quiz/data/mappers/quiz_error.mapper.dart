@@ -1,19 +1,25 @@
-/// Maps raw [Exception] objects thrown by [QuizService] into
-/// human-readable error strings for the presentation layer.
+/// Maps raw exceptions thrown by [QuizService] into human-readable
+/// strings for use by [QuizRepositoryImpl].
 ///
-/// Centralising this logic here means [QuizRepositoryImpl] never
-/// constructs error strings inline, and changing copy requires
-/// touching exactly one file.
+/// This mapper sits entirely inside the data layer and only ever sees
+/// raw Dart / service exceptions. It never receives [QuizException] —
+/// that type is what [QuizRepositoryImpl] throws *after* mapping.
+///
+/// Mapping is intentionally free of string parsing. Each branch returns
+/// a literal string or delegates to [ArgumentError.message] /
+/// [FormatException.message], both of which are typed fields.
 abstract final class QuizErrorMapper {
   QuizErrorMapper._();
 
-  /// Converts [error] into a user-facing message.
+  /// Converts [error] into a user-facing message string.
   ///
   /// Dispatch order:
-  /// 1. [FormatException] — malformed data from the service.
-  /// 2. [ArgumentError]   — invalid data that slipped past validation.
-  /// 3. Generic [Exception] — catch-all with the raw message surfaced.
-  /// 4. Unknown [Object]  — absolute fallback for non-Exception throws.
+  /// 1. [FormatException]  — malformed data received from the service.
+  /// 2. [ArgumentError]    — invalid data that slipped past [Question] validation.
+  /// 3. Generic [Exception] — catch-all; returns a static fallback string.
+  ///    No `.toString()` parsing is performed — [QuizException] carries
+  ///    the message as a typed field, making string stripping unnecessary.
+  /// 4. Unknown [Object]   — absolute fallback for non-Exception throws.
   static String map(Object error) {
     if (error is FormatException) {
       return 'The question data is malformed. Please try again.';
@@ -24,15 +30,7 @@ abstract final class QuizErrorMapper {
     }
 
     if (error is Exception) {
-      final message = error.toString();
-      // Strip the "Exception: " prefix Dart adds automatically so the
-      // string shown to the user is clean.
-      final cleaned = message.startsWith('Exception: ')
-          ? message.substring('Exception: '.length)
-          : message;
-      return cleaned.isNotEmpty
-          ? cleaned
-          : 'An unexpected error occurred. Please try again.';
+      return 'An unexpected error occurred. Please try again.';
     }
 
     return 'An unexpected error occurred. Please try again.';
