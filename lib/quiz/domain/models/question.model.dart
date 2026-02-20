@@ -1,23 +1,32 @@
 /// Represents a single quiz question.
 ///
 /// This is a pure domain model — zero Flutter dependencies.
-/// The [correctIndex] is the index into [options] that identifies
-/// the correct answer and is intentionally kept internal to the domain;
-/// the presentation layer never needs to know it directly until grading.
+///
+/// Validation is enforced via [ArgumentError] so it fires in both
+/// debug **and** release builds, unlike [assert] which is stripped
+/// in release mode.
 class Question {
-  const Question({
+  Question({
     required this.id,
     required this.text,
     required this.options,
     required this.correctIndex,
-  }) : assert(
-          options.length == 4,
-          'A Question must always have exactly 4 options.',
-        ),
-        assert(
-          correctIndex >= 0 && correctIndex <= 3,
-          'correctIndex must be a valid index into options (0–3).',
-        );
+  }) {
+    if (options.length != 4) {
+      throw ArgumentError.value(
+        options.length,
+        'options',
+        'A Question must have exactly 4 options, got ${options.length}.',
+      );
+    }
+    if (correctIndex < 0 || correctIndex > 3) {
+      throw ArgumentError.value(
+        correctIndex,
+        'correctIndex',
+        'correctIndex must be 0–3, got $correctIndex.',
+      );
+    }
+  }
 
   /// Unique identifier — used as the key in [QuizResult.selectedAnswers].
   final int id;
