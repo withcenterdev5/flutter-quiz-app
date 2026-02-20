@@ -241,12 +241,12 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 ## Phase 5 — Routing & Navigation
 > Goal: Wire GoRouter so navigation is declarative, stack-safe, and uses `.go` / `.push` correctly.
 
-- [ ] Route `/` → `HomeScreen`
-- [ ] Route `/quiz` → `QuizScreen`
+- [x] Route `/` → `HomeScreen`
+- [x] Route `/quiz` → `QuizScreen`
   - Redirect guard: if `QuizProvider.state is QuizInitial`, call `.go('/')` — prevents direct URL access
-- [ ] Route `/results` → `ResultsScreen`
+- [x] Route `/results` → `ResultsScreen`
   - Redirect guard: if `GoRouterState.extra == null`, call `.go('/')` — prevents crash on direct URL access
-- [ ] Verify final navigation call map against the project-wide Navigation Strategy table above
+- [x] Verify final navigation call map against the project-wide Navigation Strategy table above
 
 ---
 
