@@ -44,28 +44,28 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 > Goal: Confirm the project compiles, dependencies are wired, and global infrastructure is in place.
 
 ### 0.1 Dependencies
-- [ ] Verify `pubspec.yaml` includes: `provider`, `go_router`, `shimmer`, `google_fonts`
-- [ ] Run `flutter pub get` and confirm zero errors
+- [x] Verify `pubspec.yaml` includes: `provider`, `go_router`, `shimmer`, `google_fonts`
+- [x] Run `flutter pub get` and confirm zero errors
 
 ### 0.2 Theme
-- [ ] Define `AppTheme` in `core/theme/app_theme.dart` using **Material Design 3**
+- [x] Define `AppTheme` in `core/theme/app_theme.dart` using **Material Design 3**
   - Light color scheme using `ColorScheme.fromSeed`
   - Apply `GoogleFonts` text theme globally
-- [ ] Wire `AppTheme.light` into `MaterialApp.router`
+- [x] Wire `AppTheme.light` into `MaterialApp.router`
 
 ### 0.3 Global Routing Shell
-- [ ] Create `core/router/app_router.dart` with `GoRouter` instance
-- [ ] Define named route constants in `core/constants/route_names.dart`
+- [x] Create `core/router/app_router.dart` with `GoRouter` instance
+- [x] Define named route constants in `core/constants/route_names.dart`
   - `/` → Home Screen
   - `/quiz` → Quiz Question Screen
   - `/results` → Results Screen
-- [ ] Wire router into `MaterialApp.router` in `main.dart`
+- [x] Wire router into `MaterialApp.router` in `main.dart`
 
 ### 0.4 Global Widgets
-- [ ] Confirm `core/widgets/error_view.widget.dart` is implemented and reusable
+- [x] Confirm `core/widgets/error_view.widget.dart` is implemented and reusable
 
 ### 0.5 Dependency Injection
-- [ ] Register `QuizService`, `QuizRepositoryImpl`, and `QuizProvider` via `MultiProvider` / `ChangeNotifierProxyProvider` in `main.dart`
+- [x] Register `QuizService`, `QuizRepositoryImpl`, and `QuizProvider` via `MultiProvider` / `ChangeNotifierProxyProvider` in `main.dart`
 
 ---
 
