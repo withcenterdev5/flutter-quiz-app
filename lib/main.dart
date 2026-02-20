@@ -8,6 +8,7 @@ import 'package:quiz_app/quiz/data/services/quiz.service.dart';
 import 'package:quiz_app/quiz/domain/repositories/quiz.repository.dart';
 import 'package:quiz_app/quiz/presentation/providers/quiz.provider.dart';
 
+
 void main() {
   runApp(const QuizApp());
 }
