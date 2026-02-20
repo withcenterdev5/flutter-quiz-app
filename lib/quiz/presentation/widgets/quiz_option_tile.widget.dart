@@ -51,6 +51,7 @@ class QuizOptionTile extends StatelessWidget {
       // this tile's selected state actually flips.
       selector: (_, provider) =>
           provider.selectedAnswers[question.id] == optionIndex,
+          // {0} = 3
       builder: (context, isSelected, _) {
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
@@ -84,7 +85,6 @@ class QuizOptionTile extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () =>
-                // ── AGENTS.md: use read inside callbacks, never watch ──
                 context
                     .read<QuizProvider>()
                     .selectAnswer(question.id, optionIndex),

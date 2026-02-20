@@ -89,7 +89,7 @@ class QuizService {
   /// The delay keeps the [QuizLoading] shimmer state consistently visible
   /// during development and testing. Remove or reduce it for production.
   Future<List<Map<String, dynamic>>> fetchQuestions() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    await Future.delayed(const Duration(milliseconds: 1000));
     return _rawQuestions;
   }
 }

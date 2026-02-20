@@ -9,7 +9,7 @@ abstract final class AppTheme {
   AppTheme._();
 
   /// The seed color that drives the entire MD3 colour system.
-  static const Color _seedColor = Color(0xFF6750A4);
+  static const Color _seedColor = Color.fromARGB(255, 50, 173, 169);
 
   /// Light theme — the only theme in scope for this project.
   static ThemeData get light {

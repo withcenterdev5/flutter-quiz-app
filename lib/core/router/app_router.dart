@@ -92,7 +92,7 @@ GoRouter createAppRouter(QuizProvider quizProvider) {
 
     routes: [
       GoRoute(
-        path: RouteNames.home,
+        path: RouteNames.home, 
         builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(

@@ -71,7 +71,7 @@ class _HomeBody extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  Icons.quiz_rounded,
+                  Icons.question_answer,
                   size: 52,
                   color: colorScheme.primary,
                 ),
@@ -121,7 +121,7 @@ class _HomeBody extends StatelessWidget {
                     ),
                   ),
                   child: isLoading
-                      // ── AGENTS.md: CircularProgressIndicator for buttons ─
+                     
                       ? SizedBox(
                           width: 22,
                           height: 22,

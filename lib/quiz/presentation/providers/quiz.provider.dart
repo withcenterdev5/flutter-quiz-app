@@ -81,7 +81,7 @@ class QuizProvider extends ChangeNotifier {
 
   int _currentIndex = 0;
 
-  /// Maps [Question.id] → the index the user selected.
+  /// Maps [Question.id] → the index the user selected. {1;0}
   final Map<int, int> _selectedAnswers = {};
 
   /// Holds the most recent submission error message, or `null` when
