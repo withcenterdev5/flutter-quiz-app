@@ -121,7 +121,7 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 > Goal: Define sealed UI states and the ChangeNotifier that drives every screen.
 
 ### 3.1 Sealed States (`quiz/presentation/providers/`)
-- [ ] **`quiz_state.dart`** — Sealed class hierarchy
+- [x] **`quiz_state.dart`** — Sealed class hierarchy
   ```dart
   sealed class QuizState {}
   class QuizInitial    extends QuizState {}
@@ -133,7 +133,7 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
   ```
 
 ### 3.2 Provider (`quiz/presentation/providers/`)
-- [ ] **`quiz.provider.dart`** — `QuizProvider extends ChangeNotifier`
+- [x] **`quiz.provider.dart`** — `QuizProvider extends ChangeNotifier`
   - State: `QuizState state`, `int currentIndex`, `Map<int,int> selectedAnswers`
   - `loadQuestions()` → transitions: `Initial → Loading → Loaded | Error`
   - `selectAnswer(int questionId, int chosenIndex)` → saves to `selectedAnswers`, calls `notifyListeners()`
