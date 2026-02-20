@@ -1,4 +1,4 @@
-import 'package:quiz_app/quiz/domain/exceptions/quiz_exception.dart';
+import 'package:quiz_app/quiz/domain/exceptions/quiz.exception.dart';
 import 'package:quiz_app/quiz/domain/models/question.model.dart';
 import 'package:quiz_app/quiz/domain/models/quiz_result.model.dart';
 
