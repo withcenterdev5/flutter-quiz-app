@@ -73,14 +73,14 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 > Goal: Define the business contracts. Zero Flutter dependencies.
 
 ### 1.1 Models (`quiz/domain/models/`)
-- [ ] **`question.model.dart`** — `Question`
+- [x] **`question.model.dart`** — `Question`
   ```
   id          : int
   text        : String
   options     : List<String>      // 4 labelled choices (A–D)
   correctIndex: int               // index into options
   ```
-- [ ] **`quiz_result.model.dart`** — `QuizResult`
+- [x] **`quiz_result.model.dart`** — `QuizResult`
   ```
   questions       : List<Question>
   selectedAnswers : Map<int, int>   // questionId → chosen index
@@ -88,7 +88,7 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
   ```
 
 ### 1.2 Repository Interface (`quiz/domain/repositories/`)
-- [ ] **`quiz.repository.dart`** — `abstract class QuizRepository`
+- [x] **`quiz.repository.dart`** — `abstract class QuizRepository`
   - `Future<List<Question>> getQuestions()`
   - `Future<QuizResult> submitAnswers(List<Question>, Map<int,int> answers)`
 
