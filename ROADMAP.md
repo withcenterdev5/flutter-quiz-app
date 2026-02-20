@@ -98,19 +98,19 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 > Goal: Implement the repository interface with in-memory mock data. No database.
 
 ### 2.1 Mock Service (`quiz/data/services/`)
-- [ ] **`quiz.service.dart`** — `QuizService`
+- [x] **`quiz.service.dart`** — `QuizService`
   - Holds a `static const List<Map<String, dynamic>> _rawQuestions` with **10 hardcoded questions**
   - Each question has: `id`, `text`, `options` (4 choices), `correctIndex`
   - Sample topics: general knowledge / Flutter trivia (mix to keep it interesting)
   - `Future<List<Map<String,dynamic>>> fetchQuestions()` — simulates async with `Future.delayed(800ms)`
 
 ### 2.2 Error Mapper (`quiz/data/mappers/`)
-- [ ] **`quiz_error.mapper.dart`** — `QuizErrorMapper`
+- [x] **`quiz_error.mapper.dart`** — `QuizErrorMapper`
   - Converts raw `Exception` → human-readable `String` message
   - Handles: generic `Exception`, `FormatException`, unknown fallback
 
 ### 2.3 Repository Implementation (`quiz/data/repositories/`)
-- [ ] **`quiz.repository_impl.dart`** — `QuizRepositoryImpl implements QuizRepository`
+- [x] **`quiz.repository_impl.dart`** — `QuizRepositoryImpl implements QuizRepository`
   - Calls `QuizService.fetchQuestions()`, maps raw maps → `Question` domain models
   - Wraps calls in `try/catch`, maps errors via `QuizErrorMapper`
   - `submitAnswers` computes `QuizResult` in-memory and returns it
