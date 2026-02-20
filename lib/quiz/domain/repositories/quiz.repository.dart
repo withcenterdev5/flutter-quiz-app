@@ -1,3 +1,4 @@
+import 'package:quiz_app/quiz/domain/exceptions/quiz_exception.dart';
 import 'package:quiz_app/quiz/domain/models/question.model.dart';
 import 'package:quiz_app/quiz/domain/models/quiz_result.model.dart';
 
@@ -11,11 +12,8 @@ import 'package:quiz_app/quiz/domain/models/quiz_result.model.dart';
 abstract class QuizRepository {
   /// Fetches the ordered list of quiz questions.
   ///
-  /// Simulates a network/database call. The data layer introduces
-  /// artificial latency to make the loading UX testable.
-  ///
-  /// Throws an [Exception] on failure; the implementation maps it
-  /// to a user-friendly message via [QuizErrorMapper].
+  /// Throws [QuizException] on failure with a pre-mapped,
+  /// user-friendly [QuizException.message].
   Future<List<Question>> getQuestions();
 
   /// Submits the user's answers and computes the [QuizResult].
@@ -23,7 +21,7 @@ abstract class QuizRepository {
   /// [questions] — the full list returned by [getQuestions].
   /// [answers]   — maps each [Question.id] to the user's chosen index.
   ///
-  /// Throws an [Exception] on failure.
+  /// Throws [QuizException] on failure.
   Future<QuizResult> submitAnswers(
     List<Question> questions,
     Map<int, int> answers,
