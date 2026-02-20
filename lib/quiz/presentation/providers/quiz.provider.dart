@@ -1,8 +1,44 @@
 import 'package:flutter/foundation.dart';
 import 'package:quiz_app/quiz/domain/exceptions/quiz.exception.dart';
 import 'package:quiz_app/quiz/domain/models/question.model.dart';
+import 'package:quiz_app/quiz/domain/models/quiz_result.model.dart';
 import 'package:quiz_app/quiz/domain/repositories/quiz.repository.dart';
 import 'package:quiz_app/quiz/presentation/providers/quiz_state.dart';
+
+// ── Sentinel ─────────────────────────────────────────────────────────────────
+
+/// Sentinel implementation of [QuizRepository] assigned to [QuizProvider._repository]
+/// at construction time — before [QuizProvider.updateRepository] is called by
+/// [ChangeNotifierProxyProvider].
+///
+/// Both methods throw a descriptive [StateError] in debug **and** release
+/// builds, making a misconfigured DI chain impossible to ignore. This
+/// eliminates the `QuizRepository?` nullable field, all `!` operators, and
+/// the debug-only `assert` that preceded this pattern.
+///
+/// The sentinel is private to this file — it is an implementation detail of
+/// [QuizProvider] and must never be referenced externally.
+class _NotInjectedRepository implements QuizRepository {
+  const _NotInjectedRepository();
+
+  static Never _fail(String caller) => throw StateError(
+        'QuizProvider.$caller() was called before updateRepository(). '
+        'Verify that ChangeNotifierProxyProvider<QuizRepository, QuizProvider> '
+        'is registered correctly in main.dart.',
+      );
+
+  @override
+  Future<List<Question>> getQuestions() => _fail('loadQuestions');
+
+  @override
+  Future<QuizResult> submitAnswers(
+    List<Question> questions,
+    Map<int, int> answers,
+  ) =>
+      _fail('submitAnswers');
+}
+
+// ── Provider ─────────────────────────────────────────────────────────────────
 
 /// ViewModel for the quiz feature.
 ///
@@ -21,13 +57,20 @@ import 'package:quiz_app/quiz/presentation/providers/quiz_state.dart';
 ///   progress bar and question card.
 /// - Use `Selector<QuizProvider, int?>` on `selectedAnswers[id]` for
 ///   individual option tiles.
+/// - Use `Selector<QuizProvider, bool>` on [allAnswered] for the
+///   Submit button's enabled state.
+/// - Use `Selector<QuizProvider, String?>` on [submitError] to trigger
+///   a SnackBar when a submission attempt fails.
 /// - Use `context.read<QuizProvider>()` inside all `onPressed` callbacks.
 class QuizProvider extends ChangeNotifier {
   QuizProvider();
 
   // ── Private fields ───────────────────────────────────────────────────
 
-  QuizRepository? _repository;
+  /// Starts as the [_NotInjectedRepository] sentinel and is replaced by
+  /// [updateRepository] when the DI chain fires. Non-nullable by design —
+  /// no `!` operators required anywhere in this class.
+  QuizRepository _repository = const _NotInjectedRepository();
 
   QuizState _state = const QuizInitial();
 
@@ -41,6 +84,18 @@ class QuizProvider extends ChangeNotifier {
   /// Maps [Question.id] → the index the user selected.
   final Map<int, int> _selectedAnswers = {};
 
+  /// Holds the most recent submission error message, or `null` when
+  /// no error has occurred / the error has been acknowledged.
+  ///
+  /// Set to non-null on [submitQuiz] failure; cleared at the start of
+  /// every [submitQuiz] call. The screen watches this via a `Selector`
+  /// and shows a SnackBar when it transitions from null → non-null.
+  ///
+  /// The session state stays at [QuizLoaded] on submit failure, so the
+  /// user's answers are preserved and they can correct and retry without
+  /// losing progress.
+  String? _submitError;
+
   // ── Public state (read-only) ─────────────────────────────────────────
 
   /// The current sealed UI state. Screens `switch` on this value.
@@ -52,6 +107,26 @@ class QuizProvider extends ChangeNotifier {
   /// Snapshot of all answers chosen so far.
   /// Keys are [Question.id]; values are the chosen option index.
   Map<int, int> get selectedAnswers => Map.unmodifiable(_selectedAnswers);
+
+  /// The most recent submission failure message, or `null` when clear.
+  ///
+  /// The screen uses:
+  /// ```dart
+  /// Selector<QuizProvider, String?>(
+  ///   selector: (_, p) => p.submitError,
+  ///   builder: (context, error, _) {
+  ///     if (error != null) {
+  ///       WidgetsBinding.instance.addPostFrameCallback((_) {
+  ///         ScaffoldMessenger.of(context).showSnackBar(
+  ///           SnackBar(content: Text(error)),
+  ///         );
+  ///       });
+  ///     }
+  ///     return const SizedBox.shrink();
+  ///   },
+  /// )
+  /// ```
+  String? get submitError => _submitError;
 
   // ── Convenience getters ──────────────────────────────────────────────
 
@@ -81,9 +156,9 @@ class QuizProvider extends ChangeNotifier {
   /// Called by [ChangeNotifierProxyProvider.update] to inject the
   /// repository after the widget tree is built.
   ///
-  /// Throws [StateError] if called with a null repository, making a
-  /// misconfigured DI chain fail loudly at startup rather than silently
-  /// at the first user action.
+  /// Replaces the [_NotInjectedRepository] sentinel with the real
+  /// implementation. Subsequent calls to [loadQuestions] and [submitQuiz]
+  /// use the injected repository directly — no null checks required.
   void updateRepository(QuizRepository repository) {
     _repository = repository;
   }
@@ -94,16 +169,15 @@ class QuizProvider extends ChangeNotifier {
   /// `QuizInitial | QuizError → QuizLoading → QuizLoaded | QuizError`
   ///
   /// Guards against duplicate calls — if already [QuizLoading], returns
-  /// immediately without spawning a second request.
+  /// immediately without spawning a second concurrent request.
   Future<void> loadQuestions() async {
-    assert(_repository != null, 'QuizProvider: repository was not injected.');
     if (_state is QuizLoading) return;
 
     _state = const QuizLoading();
     notifyListeners();
 
     try {
-      final questions = await _repository!.getQuestions();
+      final questions = await _repository.getQuestions();
       _questions = questions;
       _currentIndex = 0;
       _selectedAnswers.clear();
@@ -148,30 +222,39 @@ class QuizProvider extends ChangeNotifier {
   }
 
   /// Submits the session answers and transitions:
-  /// `QuizLoaded → QuizSubmitting → QuizSubmitted | QuizError`
+  /// `QuizLoaded → QuizSubmitting → QuizSubmitted`
+  ///
+  /// **On failure** the state transitions back to `QuizLoaded(_questions)`,
+  /// preserving all of the user's selected answers. [submitError] is set to
+  /// the error message so the screen can surface it as a SnackBar without
+  /// destroying the session. The user may correct and retry freely.
   ///
   /// Guards:
   /// - No-op if state is not [QuizLoaded].
-  /// - No-op if not all questions are answered ([allAnswered] is false).
-  ///
-  /// On submission error the state transitions to [QuizError] so the
-  /// [ErrorView] retry path leads back through [loadQuestions].
+  /// - No-op if not all questions are answered ([allAnswered] is `false`).
   Future<void> submitQuiz() async {
-    assert(_repository != null, 'QuizProvider: repository was not injected.');
     if (_state is! QuizLoaded) return;
     if (!allAnswered) return;
 
+    // Clear any stale error from a previous failed attempt before starting.
+    _submitError = null;
     _state = const QuizSubmitting();
     notifyListeners();
 
     try {
-      final result = await _repository!.submitAnswers(
+      final result = await _repository.submitAnswers(
         _questions,
         Map.of(_selectedAnswers),
       );
       _state = QuizSubmitted(result);
     } on QuizException catch (e) {
-      _state = QuizError(e.message);
+      // ── Resilience: session stays alive on submit failure ─────────────
+      // Transition back to QuizLoaded so _questions and _selectedAnswers
+      // remain intact. The error is surfaced via submitError → SnackBar
+      // in the screen layer, consistent with AGENTS.md non-destructive
+      // error guidance.
+      _submitError = e.message;
+      _state = QuizLoaded(_questions);
     }
 
     notifyListeners();
@@ -179,13 +262,14 @@ class QuizProvider extends ChangeNotifier {
 
   /// Resets the entire session back to [QuizInitial].
   ///
-  /// Clears questions, answers, and navigation index so a retry
-  /// starts from a completely clean slate.
+  /// Clears questions, answers, navigation index, and any submit error
+  /// so a retry starts from a completely clean slate.
   void resetQuiz() {
     _state = const QuizInitial();
     _questions = const [];
     _currentIndex = 0;
     _selectedAnswers.clear();
+    _submitError = null;
     notifyListeners();
   }
 }
