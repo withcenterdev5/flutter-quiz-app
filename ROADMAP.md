@@ -151,28 +151,28 @@ Use `Consumer` and `Selector` to surgically scope widget rebuilds. **Never** use
 > Goal: Build all three screens with surgical rebuild scoping. Screens are passive.
 
 ### 4.1 Shared / Core Widgets
-- [ ] **`core/widgets/error_view.widget.dart`** — Accepts `message` + optional `onRetry` callback *(confirm exists)*
+- [x] **`core/widgets/error_view.widget.dart`** — Accepts `message` + optional `onRetry` callback *(confirm exists)*
 
 ### 4.2 Quiz Shimmer Widget (`quiz/presentation/widgets/`)
-- [ ] **`quiz_shimmer.widget.dart`** — `QuizShimmerLoader`
+- [x] **`quiz_shimmer.widget.dart`** — `QuizShimmerLoader`
   - Mimics the question card + 4 option tiles layout
   - Uses `shimmer` package; must visually match `QuizQuestionCard`
   - Pure stateless widget — no provider access needed
 
 ### 4.3 Progress Bar Widget (`quiz/presentation/widgets/`)
-- [ ] **`quiz_progress_bar.widget.dart`** — `QuizProgressBar`
+- [x] **`quiz_progress_bar.widget.dart`** — `QuizProgressBar`
   - Wraps `LinearProgressIndicator`
   - Uses `Selector<QuizProvider, double>` selecting `currentIndex / questions.length`
   - Fully isolated — the question card and option tiles do **not** rebuild when progress changes
 
 ### 4.4 Question Card Widget (`quiz/presentation/widgets/`)
-- [ ] **`quiz_question_card.widget.dart`** — `QuizQuestionCard`
+- [x] **`quiz_question_card.widget.dart`** — `QuizQuestionCard`
   - Displays: question number badge and question text
   - Uses `Selector<QuizProvider, (int, String)>` selecting `(currentIndex, currentQuestion.text)`
   - Rebuilds **only** when the displayed question changes — not when the user picks an answer
 
 ### 4.5 Option Tile Widget (`quiz/presentation/widgets/`)
-- [ ] **`quiz_option_tile.widget.dart`** — `QuizOptionTile`
+- [x] **`quiz_option_tile.widget.dart`** — `QuizOptionTile`
   - Displays one answer option with highlighted selected state
   - Each tile uses `Selector<QuizProvider, int?>` selecting `selectedAnswers[question.id]`
   - Tapping one option rebuilds **only that tile**, not all four
